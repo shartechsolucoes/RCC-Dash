@@ -94,9 +94,13 @@ export default function NovaInscricaoPage() {
   const [isCasado, setIsCasado] = useState<YesNo | "">("");
   const [temFilhos, setTemFilhos] = useState<YesNo | "">("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [events, setEvents] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     setIsLoggedIn(Boolean(getToken()));
+    apiFetch("/events")
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setEvents);
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -108,6 +112,7 @@ export default function NovaInscricaoPage() {
     const get = (key: string) => (form.get(key) as string) || undefined;
 
     const payload = {
+      eventId: get("eventId") || undefined,
       fullName: get("fullName"),
       cpf: get("cpf"),
       email: get("email"),
@@ -242,6 +247,18 @@ export default function NovaInscricaoPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 flex w-full flex-col gap-6">
+        <Section title="Evento">
+          <label className={labelClass}>
+            Vincular inscrição ao evento (Obrigatório) *
+            <select name="eventId" required className={inputClass}>
+              <option value="">Selecione um evento...</option>
+              {events.map(ev => (
+                <option key={ev.id} value={ev.id}>{ev.name}</option>
+              ))}
+            </select>
+          </label>
+        </Section>
+
         <Section title="Dados pessoais">
           <div className="flex justify-center">
             <ImageUpload name="photoUrl" label="Foto" shape="circle" />
