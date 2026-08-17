@@ -41,6 +41,7 @@ export default function EventoDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function load() {
     apiFetch(`/events/${eventId}`)
@@ -63,6 +64,7 @@ export default function EventoDetailPage() {
   async function handleUpdate(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
     setErrorMessage(null);
+    setSuccessMessage(null);
     const form = new FormData(formEvent.currentTarget);
 
     const response = await apiFetch(`/events/${eventId}`, {
@@ -81,9 +83,12 @@ export default function EventoDetailPage() {
 
     if (!response.ok) {
       setErrorMessage("Não foi possível salvar as alterações");
+      setTimeout(() => setErrorMessage(null), 5000);
       return;
     }
 
+    setSuccessMessage("Evento salvo com sucesso!");
+    setTimeout(() => setSuccessMessage(null), 5000);
     load();
   }
 
@@ -185,7 +190,8 @@ export default function EventoDetailPage() {
           </label>
         </div>
 
-        {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
+        {errorMessage && <p className="text-sm text-red-600 font-medium">{errorMessage}</p>}
+        {successMessage && <p className="text-sm text-green-600 font-medium bg-green-50 p-2 rounded border border-green-200">{successMessage}</p>}
 
         <button type="submit" className="flex items-center gap-1.5 self-start rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800">
           <Save size={14} /> Salvar
