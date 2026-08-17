@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Renovação com Cristo (RCC) - Plataforma
 
-## Getting Started
+Este é o repositório principal do projeto **Renovação com Cristo (RCC)**, contendo três aplicações distintas divididas em uma arquitetura moderna utilizando **Node.js** e **Next.js**. O sistema foi projetado para gerenciar eventos, membros, inscrições e conteúdo institucional através do Site, Dashboard e uma API central.
 
-First, run the development server:
+## 🛠️ Tecnologias e Linguagens Utilizadas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **RCC-API**:
+  - Node.js com Express
+  - TypeScript
+  - Prisma (ORM)
+  - Banco de Dados: MySQL
+- **RCC-Dash (Painel Administrativo)**:
+  - Next.js (React)
+  - TypeScript
+  - Tailwind CSS
+- **RCC-Site (Página Institucional)**:
+  - Next.js (React)
+  - TypeScript
+  - Tailwind CSS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔗 URLs do Projeto em Produção
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O projeto está rodando em um servidor local via Docker e exposto para a internet através do Nginx Proxy Manager (NPM).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Site Institucional**: [https://renovacaocomcristo.com.br](https://renovacaocomcristo.com.br)
+- **Painel Administrativo (Dashboard)**: [https://dash.renovacaocomcristo.com.br](https://dash.renovacaocomcristo.com.br)
+- **API (Backend)**: [https://api.renovacaocomcristo.com.br](https://api.renovacaocomcristo.com.br)
 
-## Learn More
+## 🚀 Como fazer o Deploy (Subir o projeto)
 
-To learn more about Next.js, take a look at the following resources:
+O projeto inteiro está conteinerizado com Docker. Para atualizar ou subir o projeto no servidor pela primeira vez:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Acesse o servidor via SSH:
+   ```bash
+   ssh root@10.0.40.106
+   ```
+2. Navegue até a pasta do projeto:
+   ```bash
+   cd /root/Site_Luis
+   ```
+3. Execute o comando do Docker Compose para construir e subir todas as imagens:
+   ```bash
+   docker compose up --build -d
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Isso criará a rede `rcc-network` e fará o deploy automático do `rcc-api` (porta 3333), `rcc-dash` (porta 3001) e `rcc-site` (porta 3000). O Nginx Proxy Manager (já configurado) redireciona as URLs públicas para essas portas correspondentes internamente.
