@@ -191,12 +191,6 @@ export default function EventoInscricaoPage() {
           precisa: cuidadoEspecial === "sim",
           qual: cuidadoEspecial === "sim" ? get("qualCuidadoEspecial") : undefined,
         },
-        relacionamentoPais: get("relacionamentoPais"),
-        situacaoFamiliar: get("situacaoFamiliar"),
-        pai: { nome: get("nomePai"), dataNascimento: get("dataNascimentoPai") },
-        mae: { nome: get("nomeMae"), dataNascimento: get("dataNascimentoMae") },
-        casadoCivil: get("casadoCivil"),
-        casadoIgreja: get("casadoIgreja"),
         casado: {
           sim: isCasado === "sim",
           dataCasamento: isCasado === "sim" ? get("dataCasamento") : undefined,
@@ -207,7 +201,6 @@ export default function EventoInscricaoPage() {
           idades: temFilhos === "sim" ? get("idadesFilhos") : undefined,
           levaraParaKids: temFilhos === "sim" ? get("levaraParaKids") : undefined,
         },
-        responsavelEmergencia: get("responsavelEmergencia"),
         contatosEmergencia: [
           { nome: get("emergencia1Nome"), telefone: get("emergencia1Telefone") },
           { nome: get("emergencia2Nome"), telefone: get("emergencia2Telefone") },
@@ -477,58 +470,6 @@ export default function EventoInscricaoPage() {
             </Section>
 
             <Section title="Situação familiar">
-              <label className={labelClass}>
-                Relacionamento com seus pais
-                <textarea name="relacionamentoPais" className={inputClass} rows={2} />
-              </label>
-
-              <label className={labelClass}>
-                Situação familiar
-                <textarea name="situacaoFamiliar" className={inputClass} rows={2} />
-              </label>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className={labelClass}>
-                  Nome completo do pai
-                  <input name="nomePai" className={inputClass} />
-                </label>
-                <label className={labelClass}>
-                  Data de nascimento do pai
-                  <input type="date" name="dataNascimentoPai" className={inputClass} />
-                </label>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className={labelClass}>
-                  Nome completo da mãe
-                  <input name="nomeMae" className={inputClass} />
-                </label>
-                <label className={labelClass}>
-                  Data de nascimento da mãe
-                  <input type="date" name="dataNascimentoMae" className={inputClass} />
-                </label>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className={labelClass}>
-                  São casados no civil? (pais)
-                  <select name="casadoCivil" className={inputClass}>
-                    <option value="">Selecione</option>
-                    <option value="sim">Sim</option>
-                    <option value="nao">Não</option>
-                  </select>
-                </label>
-
-                <label className={labelClass}>
-                  São casados na igreja? (pais)
-                  <select name="casadoIgreja" className={inputClass}>
-                    <option value="">Selecione</option>
-                    <option value="sim">Sim</option>
-                    <option value="nao">Não</option>
-                  </select>
-                </label>
-              </div>
-
               <YesNoField legend="Você é casado? *" value={isCasado} onChange={setIsCasado}>
                 <div className="mt-2 grid gap-3 sm:grid-cols-2">
                   <label className={labelClass}>
@@ -560,13 +501,8 @@ export default function EventoInscricaoPage() {
 
             <Section
               title="Contatos de emergência"
-              description="Nome do responsável e até 3 contatos que não estarão no local do evento."
+              description="Até 3 contatos que não estarão no local do evento."
             >
-              <label className={labelClass}>
-                Nome do responsável / emergência *
-                <input name="responsavelEmergencia" required className={inputClass} />
-              </label>
-
               {[1, 2, 3].map((n) => (
                 <div key={n} className="grid gap-4 sm:grid-cols-2">
                   <input

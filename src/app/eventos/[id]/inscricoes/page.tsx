@@ -201,12 +201,6 @@ function RegistrationDetails({ registration }: { registration: Registration }) {
       </DetailSection>
 
       <DetailSection title="Situação familiar">
-        <Field label="Relacionamento com os pais" value={text(f.relacionamentoPais)} />
-        <Field label="Situação familiar" value={text(f.situacaoFamiliar)} />
-        <Field label="Pai" value={pai.nome ? `${pai.nome}${pai.dataNascimento ? ` (${pai.dataNascimento})` : ""}` : "—"} />
-        <Field label="Mãe" value={mae.nome ? `${mae.nome}${mae.dataNascimento ? ` (${mae.dataNascimento})` : ""}` : "—"} />
-        <Field label="Pais casados no civil" value={text(f.casadoCivil)} />
-        <Field label="Pais casados na igreja" value={text(f.casadoIgreja)} />
         <Field
           label="É casado(a)"
           value={casado.sim ? `Sim — ${text(casado.nomeConjuge)} (${text(casado.dataCasamento)})` : "Não"}
@@ -224,7 +218,6 @@ function RegistrationDetails({ registration }: { registration: Registration }) {
       </DetailSection>
 
       <DetailSection title="Contatos de emergência">
-        <Field label="Responsável" value={text(f.responsavelEmergencia)} />
         {contatosEmergencia.map((contato, index) => (
           <Field
             key={index}
