@@ -107,34 +107,21 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
 }
 
 function RegistrationDetails({ registration }: { registration: Registration }) {
-  const f = (registration.formData ?? {}) as Record<string, any>;
-  const endereco = f.endereco ?? {};
-  const sacramentos = f.sacramentos ?? {};
-  const medicamentoContinuo = f.medicamentoContinuo ?? {};
-  const alergiaMedicamento = f.alergiaMedicamento ?? {};
-  const alergiaAlimentar = f.alergiaAlimentar ?? {};
-  const cuidadoEspecial = f.cuidadoEspecial ?? {};
-  const pai = f.pai ?? {};
-  const mae = f.mae ?? {};
-  const casado = f.casado ?? {};
-  const temFilhos = f.temFilhos ?? {};
-  const contatosEmergencia: { nome?: string; telefone?: string }[] = Array.isArray(f.contatosEmergencia)
-    ? f.contatosEmergencia
-    : [];
+  const f = registration;
 
   return (
     <div className="flex flex-col gap-6 border-t border-zinc-50 bg-zinc-50/60 px-5 py-5">
       <div className="flex items-center gap-4">
         <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-zinc-500">
-          {registration.photoUrl ? (
+          {f.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={registration.photoUrl} alt="" className="h-full w-full object-cover" />
+            <img src={f.photoUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <User size={22} />
           )}
         </span>
         <div>
-          <p className="text-sm font-semibold text-zinc-900">{registration.fullName}</p>
+          <p className="text-sm font-semibold text-zinc-900">{f.fullName}</p>
           <p className="text-xs text-zinc-500">Crachá: {text(f.nomeCracha)}</p>
         </div>
       </div>
@@ -142,17 +129,17 @@ function RegistrationDetails({ registration }: { registration: Registration }) {
       <DetailSection title="Dados pessoais">
         <Field label="Sexo" value={text(f.sexo)} />
         <Field label="Data de nascimento" value={text(f.dataNascimento)} />
-        <Field label="CPF" value={registration.cpf ?? "—"} />
-        <Field label="Celular" value={registration.phone ?? "—"} />
-        <Field label="E-mail" value={registration.email} />
+        <Field label="CPF" value={f.cpf ?? "—"} />
+        <Field label="Celular" value={f.phone ?? "—"} />
+        <Field label="E-mail" value={f.email} />
         <Field label="Instagram" value={text(f.instagram)} />
       </DetailSection>
 
       <DetailSection title="Endereço">
-        <Field label="Rua / Número" value={`${text(endereco.rua)}${endereco.numero ? `, ${endereco.numero}` : ""}`} />
-        <Field label="Bairro" value={text(endereco.bairro)} />
-        <Field label="Cidade" value={text(endereco.cidade)} />
-        <Field label="CEP" value={text(endereco.cep)} />
+        <Field label="Rua / Número" value={`${text(f.rua)}${f.numero ? `, ${f.numero}` : ""}`} />
+        <Field label="Bairro" value={text(f.bairro)} />
+        <Field label="Cidade" value={text(f.cidade)} />
+        <Field label="CEP" value={text(f.cep)} />
       </DetailSection>
 
       <DetailSection title="Formação e profissão">
@@ -165,10 +152,10 @@ function RegistrationDetails({ registration }: { registration: Registration }) {
           label="Sacramentos"
           value={
             [
-              sacramentos.batismo && "Batismo",
-              sacramentos.eucaristia && "Eucaristia",
-              sacramentos.crisma && "Crisma",
-              sacramentos.nenhum && "Nenhum",
+              f.sacramentoBatismo && "Batismo",
+              f.sacramentoEucaristia && "Eucaristia",
+              f.sacramentoCrisma && "Crisma",
+              f.sacramentoNenhum && "Nenhum",
             ]
               .filter(Boolean)
               .join(", ") || "—"
@@ -184,47 +171,50 @@ function RegistrationDetails({ registration }: { registration: Registration }) {
       <DetailSection title="Saúde">
         <Field
           label="Medicamento contínuo"
-          value={medicamentoContinuo.usa ? `Sim — ${text(medicamentoContinuo.qual)}` : "Não"}
+          value={f.usaMedicamentoContinuo ? `Sim — ${text(f.qualMedicamento)}` : "Não"}
         />
         <Field
           label="Alergia a medicamentos"
-          value={alergiaMedicamento.tem ? `Sim — ${text(alergiaMedicamento.quais)}` : "Não"}
+          value={f.temAlergiaMedicamento ? `Sim — ${text(f.quaisAlergiaMedicamento)}` : "Não"}
         />
         <Field
           label="Alergia alimentar"
-          value={alergiaAlimentar.tem ? `Sim — ${text(alergiaAlimentar.quais)}` : "Não"}
+          value={f.temAlergiaAlimentar ? `Sim — ${text(f.quaisAlergiaAlimentar)}` : "Não"}
         />
         <Field
           label="Cuidado especial"
-          value={cuidadoEspecial.precisa ? `Sim — ${text(cuidadoEspecial.qual)}` : "Não"}
+          value={f.precisaCuidadoEspecial ? `Sim — ${text(f.qualCuidadoEspecial)}` : "Não"}
         />
       </DetailSection>
 
       <DetailSection title="Situação familiar">
         <Field
           label="É casado(a)"
-          value={casado.sim ? `Sim — ${text(casado.nomeConjuge)} (${text(casado.dataCasamento)})` : "Não"}
+          value={f.isCasado ? `Sim — ${text(f.nomeConjuge)} (${text(f.dataCasamento)})` : "Não"}
         />
         <Field
           label="Tem filhos"
           value={
-            temFilhos.sim
-              ? `Sim — idades: ${text(temFilhos.idades)}${
-                  temFilhos.levaraParaKids ? ` · Kids: ${temFilhos.levaraParaKids}` : ""
-                }`
+            f.temFilhos
+              ? `Sim — idades: ${text(f.idadesFilhos)}`
               : "Não"
           }
         />
       </DetailSection>
 
       <DetailSection title="Contatos de emergência">
-        {contatosEmergencia.map((contato, index) => (
-          <Field
-            key={index}
-            label={`Contato ${index + 1}`}
-            value={contato.nome || contato.telefone ? `${text(contato.nome)} — ${text(contato.telefone)}` : "—"}
-          />
-        ))}
+        <Field
+          label="Contato 1"
+          value={f.emergencia1Nome || f.emergencia1Telefone ? `${text(f.emergencia1Nome)} — ${text(f.emergencia1Telefone)}` : "—"}
+        />
+        <Field
+          label="Contato 2"
+          value={f.emergencia2Nome || f.emergencia2Telefone ? `${text(f.emergencia2Nome)} — ${text(f.emergencia2Telefone)}` : "—"}
+        />
+        <Field
+          label="Contato 3"
+          value={f.emergencia3Nome || f.emergencia3Telefone ? `${text(f.emergencia3Nome)} — ${text(f.emergencia3Telefone)}` : "—"}
+        />
       </DetailSection>
     </div>
   );
