@@ -37,7 +37,7 @@ interface Registration {
   memberId: string | null;
   checkedInAt: string | null;
   createdAt: string;
-  formData: Record<string, unknown> | null;
+
 }
 
 interface EventInfo {
