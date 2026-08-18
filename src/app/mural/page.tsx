@@ -11,6 +11,7 @@ interface Post {
   id: string;
   content: string;
   imageUrl: string | null;
+  isPublic: boolean;
   createdAt: string;
   author: { email: string; member: { fullName: string; photoUrl: string | null } | null };
 }
@@ -44,6 +45,7 @@ export default function MuralPage() {
       body: JSON.stringify({
         content: form.get("content"),
         imageUrl: form.get("imageUrl") || undefined,
+        isPublic: form.get("isPublic") === "on",
       }),
     });
 
@@ -73,6 +75,10 @@ export default function MuralPage() {
             className="rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-900"
           />
           <ImageUpload name="imageUrl" label="Imagem (opcional)" />
+          <label className="flex items-center gap-2 text-sm text-zinc-600 font-medium cursor-pointer">
+            <input type="checkbox" name="isPublic" className="rounded border-zinc-300 text-amber-600 focus:ring-amber-600 h-4 w-4" />
+            Publicar na tela inicial do site oficial (Público)
+          </label>
           <button
             type="submit"
             className="flex w-fit items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
@@ -102,7 +108,10 @@ export default function MuralPage() {
                   <p className="truncate text-sm font-medium text-zinc-900">
                     {post.author.member?.fullName ?? post.author.email}
                   </p>
-                  <p className="text-xs text-zinc-400">{formatDate(post.createdAt)}</p>
+                  <p className="flex items-center gap-2 text-xs text-zinc-400">
+                    {formatDate(post.createdAt)}
+                    {post.isPublic && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">PÚBLICO</span>}
+                  </p>
                 </div>
                 {canPost && (
                   <button
