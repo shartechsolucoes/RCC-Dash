@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -127,9 +127,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
+            className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
           >
-            {submitting ? "Entrando..." : "Entrar"}
+            {submitting ? (
+              "Entrando..."
+            ) : (
+              <>
+                <LogIn size={16} />
+                Entrar
+              </>
+            )}
           </button>
 
           {isDev && (

@@ -19,9 +19,10 @@ interface RichTextEditorProps {
   name: string;
   label?: string;
   defaultValue?: string | null;
+  disabled?: boolean;
 }
 
-export function RichTextEditor({ name, label, defaultValue }: RichTextEditorProps) {
+export function RichTextEditor({ name, label, defaultValue, disabled = false }: RichTextEditorProps) {
   const [mounted, setMounted] = useState(false);
   const [value, setValue] = useState(defaultValue ?? "");
 
@@ -36,6 +37,7 @@ export function RichTextEditor({ name, label, defaultValue }: RichTextEditorProp
       <div className="rich-text-editor rounded-md border border-zinc-200">
         {mounted ? (
           <CKEditor
+            disabled={disabled}
             editor={ClassicEditor}
             data={defaultValue ?? ""}
             config={{

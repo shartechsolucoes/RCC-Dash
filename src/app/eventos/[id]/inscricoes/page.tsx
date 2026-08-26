@@ -24,6 +24,8 @@ import { apiFetch } from "@/lib/auth";
 import { RequireRole } from "@/components/RequireRole";
 import { MANAGEMENT_ROLES } from "@/lib/permissions";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 type Status = "PENDING" | "APPROVED" | "REJECTED" | "WAITLIST";
 
 interface Registration {
@@ -327,7 +329,7 @@ export default function EventoInscricoesPage() {
   }
 
   function copyInviteLink() {
-    const link = `${window.location.origin}/eventos/${eventId}/inscricao`;
+    const link = `${SITE_URL}/eventos/${eventId}/inscricao`;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

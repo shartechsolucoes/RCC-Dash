@@ -1,5 +1,33 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+const CONFIGURED_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 const TOKEN_KEY = "fraternidade_access_token";
+
+/**
+ * Base da API resolvida em tempo de execução.
+ *
+ * O valor configurado aponta para localhost, o que só vale quando a página é
+ * aberta na própria máquina. Acessada de outro aparelho da rede (celular, outro
+ * PC), "localhost" passa a ser o aparelho do visitante e nenhuma chamada
+ * funciona. Nesse caso reaproveitamos o host pelo qual a página foi servida,
+ * mantendo a porta da API — assim vale tanto em localhost quanto na rede, sem
+ * depender de fixar um IP que o DHCP troca.
+ */
+function apiUrl() {
+  if (typeof window === "undefined") return CONFIGURED_API_URL;
+
+  try {
+    const configured = new URL(CONFIGURED_API_URL);
+    const isLoopback = configured.hostname === "localhost" || configured.hostname === "127.0.0.1";
+
+    if (isLoopback && window.location.hostname !== configured.hostname) {
+      configured.hostname = window.location.hostname;
+      return configured.origin;
+    }
+  } catch {
+    // NEXT_PUBLIC_API_URL malformada: usa o valor como veio.
+  }
+
+  return CONFIGURED_API_URL;
+}
 
 export interface CurrentUser {
   id: string;
@@ -27,10 +55,19 @@ export function saveToken(token: string) {
 
 export function clearToken() {
   window.localStorage.removeItem(TOKEN_KEY);
+  cachedProfileLevel = null;
 }
 
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// Populado pelo fetchMe() mais recente. Permite ao apiFetch barrar escritas de
+// MEMBRO sem esperar uma nova chamada de rede a cada clique — é uma rede de
+// segurança de UI para telas que esqueçam de esconder o próprio controle de
+// edição; a garantia de verdade continua sendo o backend.
+let cachedProfileLevel: string | null = null;
+
 export async function login(email: string, password: string): Promise<void> {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${apiUrl()}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -49,7 +86,7 @@ export async function fetchMe(): Promise<CurrentUser | null> {
   const token = getToken();
   if (!token) return null;
 
-  const response = await fetch(`${API_URL}/auth/me`, {
+  const response = await fetch(`${apiUrl()}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -58,12 +95,23 @@ export async function fetchMe(): Promise<CurrentUser | null> {
     return null;
   }
 
-  return response.json();
+  const user: CurrentUser = await response.json();
+  cachedProfileLevel = user.profileLevel;
+  return user;
 }
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const method = (init.method ?? "GET").toUpperCase();
+
+  if (cachedProfileLevel === "MEMBRO" && MUTATING_METHODS.has(method)) {
+    return new Response(JSON.stringify({ message: "Seu perfil tem acesso apenas de leitura." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const token = getToken();
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${apiUrl()}${path}`, {
     ...init,
     headers: {
       ...(init.headers ?? {}),

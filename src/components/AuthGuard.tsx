@@ -3,7 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { getToken } from "@/lib/auth";
+import { getToken, fetchMe, type CurrentUser } from "@/lib/auth";
+import { AppShell } from "./AppShell";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
@@ -14,6 +15,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<CurrentUser | null>(null);
 
   const isPublicRoute =
     PUBLIC_ROUTES.includes(pathname) || PUBLIC_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
@@ -26,6 +28,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    fetchMe().then(setUser);
     setReady(true);
   }, [pathname, router, isPublicRoute]);
 
@@ -37,13 +40,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  return (
-    <div className="flex flex-1 gap-4 p-4">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-sm">
-        <Topbar />
-        <div className="flex-1 overflow-y-auto">{children}</div>
+  const isRoot = user?.profileLevel === "ROOT";
+
+  if (isRoot) {
+    return (
+      <div className="flex flex-1 gap-4 p-4">
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-card">
+          <Topbar />
+          <div className="flex-1 overflow-y-auto">{children}</div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return <AppShell>{children}</AppShell>;
 }

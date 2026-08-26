@@ -75,12 +75,16 @@ export default function EventosPage() {
       {events && events.length > 0 && (
         <div className="mt-6 flex flex-col divide-y divide-zinc-100 rounded-2xl border border-zinc-100">
           {events.map((event) => (
-            <Link
+            <div
               key={event.id}
-              href={`/eventos/${event.id}`}
-              className="flex items-center gap-3 px-5 py-4 hover:bg-zinc-50"
+              className="relative flex items-center gap-3 px-5 py-4 hover:bg-zinc-50"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-zinc-500">
+              <Link
+                href={`/eventos/${event.id}`}
+                aria-label={event.name}
+                className="absolute inset-0"
+              />
+              <span className="pointer-events-none relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-zinc-500">
                 {event.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={event.coverImageUrl} alt="" className="h-full w-full object-cover" />
@@ -88,7 +92,7 @@ export default function EventosPage() {
                   <Calendar size={16} />
                 )}
               </span>
-              <div className="min-w-0 flex-1">
+              <div className="pointer-events-none relative min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-zinc-900">
                   {event.name}
                   {!event.isActive && (
@@ -103,10 +107,7 @@ export default function EventosPage() {
                   {event.group ? ` · ${event.group.name}` : ""}
                 </p>
               </div>
-              <span
-                onClick={(e) => e.stopPropagation()}
-                className="relative"
-              >
+              <span className="relative">
                 <Link
                   href={`/eventos/${event.id}/inscricoes`}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
@@ -128,12 +129,12 @@ export default function EventosPage() {
               <button
                 type="button"
                 onClick={(e) => handleDelete(event.id, e)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-red-50 hover:text-red-600"
+                className="relative flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 size={15} />
               </button>
-              <ChevronRight size={16} className="shrink-0 text-zinc-300" />
-            </Link>
+              <ChevronRight size={16} className="pointer-events-none relative shrink-0 text-zinc-300" />
+            </div>
           ))}
         </div>
       )}

@@ -1,10 +1,11 @@
 "use client";
 
-import { Building2, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { Building2, ChevronRight, Globe, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { apiFetch } from "@/lib/auth";
+import { apiFetch, fetchMe } from "@/lib/auth";
+import { hasAccess, MANAGEMENT_ROLES, type ProfileLevel } from "@/lib/permissions";
 
 interface Company {
   id: string;
@@ -27,6 +28,7 @@ function formatAddress(company: Company) {
 
 export default function EmpresasPage() {
   const [companies, setCompanies] = useState<Company[] | null>(null);
+  const [profileLevel, setProfileLevel] = useState<ProfileLevel | null>(null);
 
   function load() {
     apiFetch("/companies")
@@ -35,6 +37,11 @@ export default function EmpresasPage() {
   }
 
   useEffect(load, []);
+  useEffect(() => {
+    fetchMe().then((me) => setProfileLevel((me?.profileLevel as ProfileLevel) ?? null));
+  }, []);
+
+  const canManage = hasAccess(profileLevel, MANAGEMENT_ROLES);
 
   async function handleDelete(id: string, event: React.MouseEvent) {
     event.preventDefault();
@@ -48,19 +55,49 @@ export default function EmpresasPage() {
     <main className="px-8 py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Empresas Amigas</h1>
-        <Link
-          href="/empresas/novo"
-          className="flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-        >
-          <Plus size={16} />
-          Nova empresa
-        </Link>
+        {canManage && (
+          <Link
+            href="/empresas/novo"
+            className="flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          >
+            <Plus size={16} />
+            Nova empresa
+          </Link>
+        )}
       </div>
 
       {companies === null && <p className="mt-6 text-sm text-zinc-500">Carregando...</p>}
       {companies?.length === 0 && <p className="mt-6 text-sm text-zinc-500">Nenhuma empresa cadastrada.</p>}
 
-      {companies && companies.length > 0 && (
+      {!canManage && companies && companies.length > 0 && (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {companies.map((company) => (
+            <Link
+              key={company.id}
+              href={`/empresas/ler/${company.id}`}
+              className="flex flex-col items-center gap-3 border border-slate-100 bg-white p-6 text-center shadow-card transition-shadow hover:shadow-card-hover"
+            >
+              {company.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={company.logoUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+                  <Building2 size={24} />
+                </span>
+              )}
+              <p className="text-sm font-semibold text-slate-900">{company.name}</p>
+              {formatAddress(company) && <p className="text-xs text-slate-500">{formatAddress(company)}</p>}
+              {company.website && (
+                <span className="flex items-center gap-1 text-xs text-primary-600">
+                  <Globe size={11} /> {company.website.replace(/^https?:\/\//, "")}
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {canManage && companies && companies.length > 0 && (
         <div className="mt-6 flex flex-col divide-y divide-zinc-100 rounded-2xl border border-zinc-100">
           {companies.map((company) => (
             <Link

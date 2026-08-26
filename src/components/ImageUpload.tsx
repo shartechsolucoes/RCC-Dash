@@ -10,9 +10,10 @@ interface ImageUploadProps {
   label?: string;
   defaultValue?: string | null;
   shape?: "square" | "circle";
+  disabled?: boolean;
 }
 
-export function ImageUpload({ name, label, defaultValue, shape = "square" }: ImageUploadProps) {
+export function ImageUpload({ name, label, defaultValue, shape = "square", disabled = false }: ImageUploadProps) {
   const [url, setUrl] = useState(defaultValue ?? "");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export function ImageUpload({ name, label, defaultValue, shape = "square" }: Ima
   function handleDrop(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     setDragging(false);
+    if (disabled) return;
     const file = event.dataTransfer.files?.[0];
     if (file) handleFile(file);
   }
@@ -71,6 +73,7 @@ export function ImageUpload({ name, label, defaultValue, shape = "square" }: Ima
             <ImagePlus size={18} />
           </span>
         )}
+        {disabled ? null : (
         <label
           onDragOver={(event) => {
             event.preventDefault();
@@ -106,6 +109,7 @@ export function ImageUpload({ name, label, defaultValue, shape = "square" }: Ima
             }}
           />
         </label>
+        )}
       </div>
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
