@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, LogOut, Menu, Search } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -67,13 +68,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
 
-          <Link href="/" className="shrink-0 text-lg font-extrabold tracking-tight text-slate-900">
-            RCC
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            <Image src="/logo-cropped.png" alt="RCC" width={555} height={287} className="h-8 w-auto invert" priority />
+            <span className="text-lg font-extrabold tracking-tight text-slate-900">RCC</span>
           </Link>
 
           <nav
             aria-label="Navegação principal"
-            className="scrollbar-none hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto rounded-full bg-slate-100 p-1 lg:flex"
+            className="scrollbar-none hidden min-w-0 flex-1 items-center justify-center gap-0.5 overflow-x-auto rounded-full p-1 lg:flex"
           >
             {links.map((link) => {
               const Icon = link.icon;
@@ -84,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={link.href}
                   href={link.href}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
-                    active ? "bg-primary-600 text-white" : "text-slate-500 hover:bg-white hover:text-slate-900"
+                    active ? "bg-primary-600 text-white" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
                   {active && <Icon className="h-4 w-4" />}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, ChevronDown, PanelLeft } from "lucide-react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -46,9 +47,7 @@ export function Sidebar() {
     <aside className="hidden w-64 shrink-0 flex-col gap-4 overflow-y-auto py-2 sm:flex">
       <div className="flex items-center justify-between px-2">
         <a href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
-          <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-sm text-white ${accentSolid}`}>
-            R
-          </span>
+          <Image src="/logo-cropped.png" alt="RCC" width={555} height={287} className="h-6 w-auto invert" priority />
           RCC
           {isRoot && (
             <span className="rounded-full bg-accent-root-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-root-700">

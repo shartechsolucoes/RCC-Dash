@@ -41,6 +41,7 @@ export interface CurrentUser {
     city: string | null;
     state: string | null;
     birthDate: string | null;
+    createdAt: string;
   } | null;
 }
 
@@ -103,7 +104,7 @@ export async function fetchMe(): Promise<CurrentUser | null> {
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const method = (init.method ?? "GET").toUpperCase();
 
-  if (cachedProfileLevel === "MEMBRO" && MUTATING_METHODS.has(method)) {
+  if (cachedProfileLevel === "MEMBRO" && MUTATING_METHODS.has(method) && path !== "/auth/change-password") {
     return new Response(JSON.stringify({ message: "Seu perfil tem acesso apenas de leitura." }), {
       status: 403,
       headers: { "Content-Type": "application/json" },

@@ -1,11 +1,11 @@
 "use client";
 
-import { Save, Trash2, Users } from "lucide-react";
+import { Calendar, MapPin, Save, Users } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { apiFetch } from "@/lib/auth";
+import { apiFetch, fetchMe, type CurrentUser } from "@/lib/auth";
 import { ImageUpload } from "@/components/ImageUpload";
 
 interface EventDetail {
@@ -32,9 +32,12 @@ function toLocalInputValue(value: string) {
   return local.toISOString().slice(0, 16);
 }
 
+function formatDateTime(value: string) {
+  return new Date(value).toLocaleString("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 export default function EventoDetailPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const eventId = params.id;
 
   const [event, setEvent] = useState<EventDetail | null>(null);
@@ -42,6 +45,8 @@ export default function EventoDetailPage() {
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [registrationCount, setRegistrationCount] = useState<number | null>(null);
 
   function load() {
     apiFetch(`/events/${eventId}`)
@@ -53,6 +58,10 @@ export default function EventoDetailPage() {
   }
 
   useEffect(() => {
+    fetchMe().then(setUser);
+  }, []);
+
+  useEffect(() => {
     if (!eventId) return;
     load();
     apiFetch("/groups")
@@ -60,6 +69,13 @@ export default function EventoDetailPage() {
       .then(setGroups);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
+
+  useEffect(() => {
+    if (!eventId || user?.profileLevel === "MEMBRO") return;
+    apiFetch(`/registrations?eventId=${eventId}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: unknown[]) => setRegistrationCount(data.length));
+  }, [eventId, user?.profileLevel]);
 
   async function handleUpdate(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
@@ -92,12 +108,6 @@ export default function EventoDetailPage() {
     load();
   }
 
-  async function handleDelete() {
-    if (!window.confirm("Excluir este evento?")) return;
-    await apiFetch(`/events/${eventId}`, { method: "DELETE" });
-    router.push("/eventos");
-  }
-
   if (notFound) {
     return (
       <main className="px-8 py-8">
@@ -109,13 +119,15 @@ export default function EventoDetailPage() {
     );
   }
 
-  if (!event) {
+  if (!event || !user) {
     return (
       <main className="px-8 py-8">
         <p className="text-sm text-zinc-500">Carregando...</p>
       </main>
     );
   }
+
+  const isMembro = user.profileLevel === "MEMBRO";
 
   return (
     <main className="px-8 py-8">
@@ -125,78 +137,114 @@ export default function EventoDetailPage() {
 
       <div className="mt-2 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">{event.name}</h1>
-        <div className="flex shrink-0 gap-2">
+        {!isMembro && (
           <Link
             href={`/eventos/${eventId}/inscricoes`}
-            className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-200 px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50"
           >
             <Users size={14} /> Inscrições
+            {registrationCount !== null && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-100 px-1.5 text-xs font-semibold text-primary-700">
+                {registrationCount}
+              </span>
+            )}
           </Link>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="flex items-center gap-1.5 rounded-full border border-red-200 px-3.5 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-          >
-            <Trash2 size={14} /> Excluir
-          </button>
-        </div>
+        )}
       </div>
 
-      <form onSubmit={handleUpdate} className="mt-6 flex max-w-lg flex-col gap-4 rounded-2xl border border-zinc-100 p-5">
-        <ImageUpload name="coverImageUrl" label="Capa" defaultValue={event.coverImageUrl} />
-        <label className="flex flex-col gap-1 text-sm text-zinc-600">
-          Nome
-          <input name="name" defaultValue={event.name} required minLength={3} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-zinc-600">
-          Descrição
-          <textarea name="description" defaultValue={event.description ?? ""} rows={3} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-zinc-600">
-          Local
-          <input name="location" defaultValue={event.location ?? ""} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-zinc-600">
-          Fraternidade responsável
-          <select name="groupId" defaultValue={event.groupId ?? ""} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900">
-            <option value="">—</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex gap-2">
-          <label className="flex flex-1 flex-col gap-1 text-sm text-zinc-600">
-            Início
-            <input
-              type="datetime-local"
-              name="startDate"
-              defaultValue={toLocalInputValue(event.startDate)}
-              required
-              className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900"
-            />
-          </label>
-          <label className="flex flex-1 flex-col gap-1 text-sm text-zinc-600">
-            Fim
-            <input
-              type="datetime-local"
-              name="endDate"
-              defaultValue={toLocalInputValue(event.endDate)}
-              required
-              className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900"
-            />
-          </label>
+      {isMembro ? (
+        <div className="mt-6 grid max-w-3xl gap-6 rounded-2xl border border-zinc-100 p-5 sm:grid-cols-[220px_1fr]">
+          {event.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.coverImageUrl} alt="" className="h-full max-h-56 w-full rounded-xl object-cover" />
+          ) : (
+            <div className="flex h-40 w-full items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 to-violet-50 sm:h-full sm:max-h-56">
+              <Calendar size={32} className="text-primary-300" />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-4">
+            {event.description && <p className="text-sm text-zinc-700">{event.description}</p>}
+            <div className="flex items-center gap-2 text-sm text-zinc-600">
+              <Calendar size={15} className="shrink-0 text-zinc-400" />
+              {formatDateTime(event.startDate)} — {formatDateTime(event.endDate)}
+            </div>
+            {event.location && (
+              <div className="flex items-center gap-2 text-sm text-zinc-600">
+                <MapPin size={15} className="shrink-0 text-zinc-400" />
+                {event.location}
+              </div>
+            )}
+            {event.group && (
+              <div className="flex items-center gap-2 text-sm text-zinc-600">
+                <Users size={15} className="shrink-0 text-zinc-400" />
+                {event.group.name}
+              </div>
+            )}
+          </div>
         </div>
+      ) : (
+        <form onSubmit={handleUpdate} className="mt-6 flex max-w-3xl flex-col gap-6 rounded-2xl border border-zinc-100 p-5 sm:flex-row sm:items-start">
+          <div className="shrink-0">
+            <ImageUpload name="coverImageUrl" label="Capa" defaultValue={event.coverImageUrl} />
+          </div>
 
-        {errorMessage && <p className="text-sm text-red-600 font-medium">{errorMessage}</p>}
-        {successMessage && <p className="text-sm text-green-600 font-medium bg-green-50 p-2 rounded border border-green-200">{successMessage}</p>}
+          <div className="flex flex-1 flex-col gap-4">
+            <label className="flex flex-col gap-1 text-sm text-zinc-600">
+              Nome
+              <input name="name" defaultValue={event.name} required minLength={3} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-zinc-600">
+              Descrição
+              <textarea name="description" defaultValue={event.description ?? ""} rows={3} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-zinc-600">
+              Local
+              <input name="location" defaultValue={event.location ?? ""} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-zinc-600">
+              Fraternidade responsável
+              <select name="groupId" defaultValue={event.groupId ?? ""} className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900">
+                <option value="">—</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <label className="flex flex-1 flex-col gap-1 text-sm text-zinc-600">
+                Início
+                <input
+                  type="datetime-local"
+                  name="startDate"
+                  defaultValue={toLocalInputValue(event.startDate)}
+                  required
+                  className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900"
+                />
+              </label>
+              <label className="flex flex-1 flex-col gap-1 text-sm text-zinc-600">
+                Fim
+                <input
+                  type="datetime-local"
+                  name="endDate"
+                  defaultValue={toLocalInputValue(event.endDate)}
+                  required
+                  className="rounded-md border border-zinc-200 px-3 py-2 text-zinc-900"
+                />
+              </label>
+            </div>
 
-        <button type="submit" className="flex items-center gap-1.5 self-start rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800">
-          <Save size={14} /> Salvar
-        </button>
-      </form>
+            {errorMessage && <p className="text-sm text-red-600 font-medium">{errorMessage}</p>}
+            {successMessage && <p className="text-sm text-green-600 font-medium bg-green-50 p-2 rounded border border-green-200">{successMessage}</p>}
+
+            <button type="submit" className="flex items-center gap-1.5 self-start rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800">
+              <Save size={14} /> Salvar
+            </button>
+          </div>
+        </form>
+      )}
     </main>
   );
 }

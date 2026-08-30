@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus, Loader2 } from "lucide-react";
+import { Camera, ImagePlus, Loader2 } from "lucide-react";
 import { useState, type DragEvent } from "react";
 
 import { apiFetch } from "@/lib/auth";
@@ -52,65 +52,65 @@ export function ImageUpload({ name, label, defaultValue, shape = "square", disab
     if (file) handleFile(file);
   }
 
+  const shapeClass = shape === "circle" ? "rounded-full" : "rounded-2xl";
+
   return (
-    <div className="flex flex-col gap-1 text-sm text-zinc-600">
+    <div className="flex flex-col gap-1.5 text-sm text-zinc-600">
       {label && <span>{label}</span>}
       <input type="hidden" name={name} value={url} />
-      <div className="flex items-center gap-3">
+
+      <label
+        onDragOver={(event) => {
+          if (disabled) return;
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        className={`group relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden border-2 bg-zinc-50 text-zinc-400 shadow-sm ${shapeClass} ${
+          disabled ? "cursor-not-allowed" : "cursor-pointer"
+        } ${dragging ? "border-amber-500" : "border-zinc-200"}`}
+      >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt=""
-            className={`h-12 w-12 object-cover ${shape === "circle" ? "rounded-full" : "rounded-lg"}`}
-          />
+          <img src={url} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span
-            className={`flex h-12 w-12 items-center justify-center bg-zinc-100 text-zinc-400 ${
-              shape === "circle" ? "rounded-full" : "rounded-lg"
+          <ImagePlus size={26} />
+        )}
+
+        {!disabled && (
+          <div
+            className={`absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-white transition-opacity ${
+              dragging ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
             }`}
           >
-            <ImagePlus size={18} />
-          </span>
+            {uploading ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <>
+                <Camera size={20} />
+                <span className="px-2 text-center text-[11px] font-medium leading-tight">
+                  {dragging ? "Solte aqui" : url ? "Trocar foto" : "Enviar foto"}
+                </span>
+              </>
+            )}
+          </div>
         )}
-        {disabled ? null : (
-        <label
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-          className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-            dragging
-              ? "border-amber-500 bg-amber-50 text-amber-700"
-              : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"
-          }`}
-        >
-          {uploading ? (
-            <span className="flex items-center gap-1">
-              <Loader2 size={13} className="animate-spin" /> Enviando...
-            </span>
-          ) : dragging ? (
-            "Solte a imagem aqui"
-          ) : url ? (
-            "Trocar imagem (ou arraste)"
-          ) : (
-            "Escolher ou arrastar imagem"
-          )}
+
+        {!disabled && (
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
-            className="hidden"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) handleFile(file);
               event.target.value = "";
             }}
           />
-        </label>
         )}
-      </div>
+      </label>
+
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   );

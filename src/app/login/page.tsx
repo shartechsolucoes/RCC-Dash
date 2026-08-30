@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -58,9 +59,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/50" />
         <div className="relative flex h-full flex-col justify-between p-12 text-white">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-amber-400/70 text-sm text-amber-400">
-              R
-            </span>
+            <Image src="/logo-cropped.png" alt="RCC" width={555} height={287} className="h-9 w-auto" priority />
             <span className="text-sm font-semibold tracking-[0.2em]">RCC</span>
           </div>
           <div className="max-w-sm">
@@ -74,9 +73,7 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center px-6 py-12">
         <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-5">
           <div className="flex flex-col items-center gap-2 text-center lg:hidden">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/70 text-sm text-amber-500">
-              R
-            </span>
+            <Image src="/logo-cropped.png" alt="RCC" width={555} height={287} className="h-10 w-auto invert" priority />
           </div>
 
           <div className="flex flex-col gap-1">
