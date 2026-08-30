@@ -7,6 +7,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { apiFetch, fetchMe, type CurrentUser } from "@/lib/auth";
 import { ImageUpload } from "@/components/ImageUpload";
+import { EventTeamsSection } from "@/components/EventTeamsSection";
 
 interface EventDetail {
   id: string;
@@ -245,6 +246,8 @@ export default function EventoDetailPage() {
           </div>
         </form>
       )}
+
+      <EventTeamsSection eventId={eventId} isMembro={isMembro} />
     </main>
   );
 }

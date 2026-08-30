@@ -1,9 +1,10 @@
 "use client";
 
-import { BarChart3, ChevronRight, Settings, UserCog, Wallet } from "lucide-react";
+import { BarChart3, ChevronRight, Layers, Settings, UserCog, Wallet } from "lucide-react";
 
 const ADMIN_SECTIONS = [
   { label: "Usuários", icon: UserCog, href: "/admin/usuarios" },
+  { label: "Tipos de equipe", icon: Layers, href: "/admin/tipos-equipe" },
   { label: "Financeiro", icon: Wallet, href: "/admin/financeiro" },
   { label: "Relatórios", icon: BarChart3, href: "/admin/relatorios" },
   { label: "Configurações", icon: Settings, href: "/admin/configuracoes" },

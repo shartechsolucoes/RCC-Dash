@@ -8,6 +8,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { apiFetch, fetchMe } from "@/lib/auth";
 import { BRAZIL_STATES } from "@/lib/brazilStates";
 import { ImageUpload } from "@/components/ImageUpload";
+import { TeamTypesManager } from "@/components/TeamTypesManager";
 
 interface GroupMemberEntry {
   id: string;
@@ -455,6 +456,8 @@ export default function FraternidadeDetailPage() {
           </div>
         )}
       </div>
+
+      <TeamTypesManager groupId={group.id} canManage={manageable} />
 
       {manageable && (
         <div className="mt-8">

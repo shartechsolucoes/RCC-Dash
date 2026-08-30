@@ -101,10 +101,19 @@ export async function fetchMe(): Promise<CurrentUser | null> {
   return user;
 }
 
+// Escritas que um MEMBRO pode fazer (auto-serviço). A garantia real é o backend;
+// isto só libera o atalho de UI que barra escritas de MEMBRO.
+const MEMBER_WRITABLE: RegExp[] = [
+  /^\/auth\/change-password$/,
+  // inscrever-se / cancelar inscrição em equipe de evento
+  /^\/events\/[^/]+\/teams\/[^/]+\/requests(\/me)?$/,
+];
+
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const method = (init.method ?? "GET").toUpperCase();
 
-  if (cachedProfileLevel === "MEMBRO" && MUTATING_METHODS.has(method) && path !== "/auth/change-password") {
+  const memberAllowed = MEMBER_WRITABLE.some((re) => re.test(path.split("?")[0]));
+  if (cachedProfileLevel === "MEMBRO" && MUTATING_METHODS.has(method) && !memberAllowed) {
     return new Response(JSON.stringify({ message: "Seu perfil tem acesso apenas de leitura." }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
