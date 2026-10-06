@@ -7,7 +7,13 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { apiFetch, fetchMe, type CurrentUser } from "@/lib/auth";
 import { ImageUpload } from "@/components/ImageUpload";
+import { EventRegistrationSettings } from "@/components/EventRegistrationSettings";
+import { EventRegistrations } from "@/components/EventRegistrations";
+import { EventValues } from "@/components/EventValues";
 import { EventTeamsSection } from "@/components/EventTeamsSection";
+import { TOP_ROLES, hasAccess } from "@/lib/permissions";
+
+type EventTab = "evento" | "inscritos" | "valores" | "inscricao" | "equipes";
 
 interface EventDetail {
   id: string;
@@ -48,6 +54,14 @@ export default function EventoDetailPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [registrationCount, setRegistrationCount] = useState<number | null>(null);
+  const [tab, setTab] = useState<EventTab>("evento");
+  // Inscritos e Valores só são montadas (e carregam dados) depois de abertas uma vez.
+  const [openedTabs, setOpenedTabs] = useState<Set<EventTab>>(() => new Set(["evento"]));
+
+  function openTab(next: EventTab) {
+    setTab(next);
+    setOpenedTabs((current) => (current.has(next) ? current : new Set(current).add(next)));
+  }
 
   function load() {
     apiFetch(`/events/${eventId}`)
@@ -129,6 +143,20 @@ export default function EventoDetailPage() {
   }
 
   const isMembro = user.profileLevel === "MEMBRO";
+  const canConfigureRegistration = hasAccess(user.profileLevel, TOP_ROLES);
+  const tabs: { key: EventTab; label: string }[] = [
+    { key: "evento", label: "Evento" },
+    ...(!isMembro
+      ? [{ key: "inscritos" as const, label: `Inscritos${registrationCount !== null ? ` (${registrationCount})` : ""}` }]
+      : []),
+    ...(canConfigureRegistration
+      ? [
+          { key: "valores" as const, label: "Valores" },
+          { key: "inscricao" as const, label: "Inscrição e pagamento" },
+        ]
+      : []),
+    { key: "equipes", label: "Equipes" },
+  ];
 
   return (
     <main className="px-8 py-8">
@@ -138,9 +166,10 @@ export default function EventoDetailPage() {
 
       <div className="mt-2 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">{event.name}</h1>
-        {!isMembro && (
-          <Link
-            href={`/eventos/${eventId}/inscricoes`}
+        {!isMembro && tab !== "inscritos" && (
+          <button
+            type="button"
+            onClick={() => openTab("inscritos")}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-200 px-3.5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50"
           >
             <Users size={14} /> Inscrições
@@ -149,10 +178,29 @@ export default function EventoDetailPage() {
                 {registrationCount}
               </span>
             )}
-          </Link>
+          </button>
         )}
       </div>
 
+      <div role="tablist" aria-label="Seções do evento" className="mt-5 flex max-w-3xl gap-1 border-b border-zinc-100">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.key}
+            onClick={() => openTab(t.key)}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+              tab === t.key ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-800"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* As abas ficam montadas (só escondidas) para não perder o que foi digitado ao trocar de aba. */}
+      <div role="tabpanel" hidden={tab !== "evento"}>
       {isMembro ? (
         <div className="mt-6 grid max-w-3xl gap-6 rounded-2xl border border-zinc-100 p-5 sm:grid-cols-[220px_1fr]">
           {event.coverImageUrl ? (
@@ -246,8 +294,29 @@ export default function EventoDetailPage() {
           </div>
         </form>
       )}
+      </div>
 
-      <EventTeamsSection eventId={eventId} isMembro={isMembro} />
+      {!isMembro && openedTabs.has("inscritos") && (
+        <div role="tabpanel" hidden={tab !== "inscritos"}>
+          <EventRegistrations eventId={eventId} embedded />
+        </div>
+      )}
+
+      {canConfigureRegistration && openedTabs.has("valores") && (
+        <div role="tabpanel" hidden={tab !== "valores"}>
+          <EventValues eventId={eventId} />
+        </div>
+      )}
+
+      {canConfigureRegistration && (
+        <div role="tabpanel" hidden={tab !== "inscricao"}>
+          <EventRegistrationSettings eventId={eventId} />
+        </div>
+      )}
+
+      <div role="tabpanel" hidden={tab !== "equipes"}>
+        <EventTeamsSection eventId={eventId} isMembro={isMembro} />
+      </div>
     </main>
   );
 }

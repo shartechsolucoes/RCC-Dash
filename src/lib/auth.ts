@@ -105,8 +105,6 @@ export async function fetchMe(): Promise<CurrentUser | null> {
 // isto só libera o atalho de UI que barra escritas de MEMBRO.
 const MEMBER_WRITABLE: RegExp[] = [
   /^\/auth\/change-password$/,
-  // inscrever-se / cancelar inscrição em equipe de evento
-  /^\/events\/[^/]+\/teams\/[^/]+\/requests(\/me)?$/,
 ];
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {

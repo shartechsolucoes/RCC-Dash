@@ -4,6 +4,7 @@ import { Paperclip, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { apiFetch } from "@/lib/auth";
+import { FinanceOverview } from "@/components/FinanceOverview";
 import { ImageUpload } from "@/components/ImageUpload";
 
 interface Transaction {
@@ -70,16 +71,6 @@ export default function FinanceiroPage() {
     load();
   }
 
-  const totals = (transactions ?? []).reduce(
-    (acc, t) => {
-      const amount = Number(t.amount);
-      if (t.type === "INCOME") acc.income += amount;
-      else acc.expense += amount;
-      return acc;
-    },
-    { income: 0, expense: 0 },
-  );
-
   return (
     <main className="px-8 py-8">
       <div className="flex items-center justify-between">
@@ -94,20 +85,7 @@ export default function FinanceiroPage() {
         </button>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 px-5 py-4">
-          <p className="text-sm text-zinc-500">Entradas</p>
-          <p className="mt-2 text-xl font-semibold text-green-700">{formatCurrency(totals.income)}</p>
-        </div>
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 px-5 py-4">
-          <p className="text-sm text-zinc-500">Saídas</p>
-          <p className="mt-2 text-xl font-semibold text-red-700">{formatCurrency(totals.expense)}</p>
-        </div>
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/60 px-5 py-4">
-          <p className="text-sm text-zinc-500">Saldo</p>
-          <p className="mt-2 text-xl font-semibold text-zinc-900">{formatCurrency(totals.income - totals.expense)}</p>
-        </div>
-      </div>
+      <FinanceOverview transactions={transactions} />
 
       {showForm && (
         <form onSubmit={handleCreate} className="mt-6 flex flex-col gap-4 rounded-2xl border border-zinc-100 p-5 sm:max-w-md">
